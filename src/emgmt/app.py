@@ -1,4 +1,4 @@
-from contextlib import asynccontextmanager
+# from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
@@ -7,13 +7,15 @@ from src.emgmt.routers import employees
 from src.emgmt.routers import departments
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    create_db_and_tables()
-    yield
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     create_db_and_tables()
+#     yield
 
 
-app = FastAPI(lifespan=lifespan)
+# app = FastAPI(lifespan=lifespan)
+
+app = FastAPI()
 
 app.include_router(employees.router)
 app.include_router(departments.router)

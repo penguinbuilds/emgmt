@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import date
 
 from sqlmodel import SQLModel, Field, Relationship
 from pydantic import EmailStr
@@ -13,6 +14,7 @@ from pydantic import EmailStr
 class DepartmentBase(SQLModel):
     name: str | None = Field(default=None)
     location: str | None = Field(default=None)
+    date_formed: date | None
 
 
 class Department(DepartmentBase, table=True):
