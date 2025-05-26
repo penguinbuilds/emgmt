@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from src.emgmt.database import create_db_and_tables
+# from src.emgmt.database import create_db_and_tables
 from src.emgmt.routers import employees
 from src.emgmt.routers import departments
 
