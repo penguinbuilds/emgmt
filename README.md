@@ -1,1 +1,1 @@
-FastAPI + SQLModel
+FastAPI + Typer + SQLAlchemy + Alembic

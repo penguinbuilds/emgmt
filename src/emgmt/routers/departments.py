@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, select
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
+from src.emgmt.models import Department
 from src.emgmt.schemas import (
-    Department,
     DepartmentPublic,
     DepartmentCreate,
     DepartmentUpdate,
@@ -20,7 +21,8 @@ router = APIRouter()
 async def add_department(
     *, session: Session = Depends(get_session), department: DepartmentCreate
 ):
-    db_department = Department.model_validate(department)
+    department_data = department.model_dump()
+    db_department = Department(**department_data)
     session.add(db_department)
     session.commit()
     session.refresh(db_department)
@@ -36,9 +38,11 @@ async def display_departments(
     offset: int = 0,
     limit: int = Query(default=100, le=100),
 ):
-    departments = session.exec(
-        select(Department).offset(offset).limit(limit)
-    ).all()
+    departments = (
+        session.execute(select(Department).offset(offset).limit(limit))
+        .scalars()
+        .all()
+    )
     return departments
 
 
@@ -71,7 +75,8 @@ async def update_department(
     if not db_department:
         raise HTTPException(status_code=404, detail="Department not found.")
     department_data = updated_details.model_dump(exclude_unset=True)
-    db_department.sqlmodel_update(department_data)
+    for key, value in department_data.items():
+        setattr(db_department, key, value)
     session.add(db_department)
     session.commit()
     session.refresh(db_department)

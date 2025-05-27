@@ -1,26 +1,16 @@
-from uuid import UUID
 from datetime import date
+from decimal import Decimal
+from uuid import UUID
 
-from sqlmodel import SQLModel, Field, Relationship
-from pydantic import EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
-
-# class Department(SQLModel, table=True):
-#     id: UUID | None = Field(default=None, primary_key=True)
-#     name: str | None = Field(default=None)
-#     location: str | None = Field(default=None)
+# --- Department Schemas ---
 
 
-class DepartmentBase(SQLModel):
-    name: str | None = Field(default=None)
-    location: str | None = Field(default=None)
+class DepartmentBase(BaseModel):
+    name: str = Field(unique=True)
+    location: str
     date_formed: date | None
-
-
-class Department(DepartmentBase, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-
-    employees: list["Employee"] = Relationship(back_populates="department")
 
 
 class DepartmentCreate(DepartmentBase):
@@ -31,25 +21,27 @@ class DepartmentPublic(DepartmentBase):
     id: int
 
 
-class DepartmentUpdate(SQLModel):
-    name: str | None = Field(default=None)
-    location: str | None = Field(default=None)
+class DepartmentUpdate(BaseModel):
+    name: str | None
+    location: str | None
+    date_formed: date | None
 
 
-class EmployeeBase(SQLModel):
-    name: str = Field(index=True)
+class DepartmentPublicWithEmployees(DepartmentPublic):
+    employees: list["EmployeePublic"] = Field(default_factory=list)
+
+
+# --- Employee Schemas ---
+
+
+class EmployeeBase(BaseModel):
+    name: str
     age: int | None = Field(default=None, ge=18, le=60)
     username: str = Field(unique=True)
     email: EmailStr = Field(unique=True)
+    salary: Decimal | None
 
-    department_id: int | None = Field(default=None, foreign_key="department.id")
-
-
-class Employee(EmployeeBase, table=True):
-    id: UUID | None = Field(default=None, primary_key=True)
-    hashed_password: str | None = Field(default=None)
-
-    department: Department | None = Relationship(back_populates="employees")
+    department_id: int | None = Field(default=None)
 
 
 class EmployeeCreate(EmployeeBase):
@@ -60,19 +52,36 @@ class EmployeePublic(EmployeeBase):
     id: UUID
 
 
-class EmployeeUpdate(SQLModel):
+class EmployeeUpdate(BaseModel):
     name: str | None
     age: int | None = Field(default=None, ge=18, le=60)
     username: str | None
     email: EmailStr | None
     password: str | None = Field(default=None)
+    salary: Decimal | None
+    department_id: int | None
 
-    team_id: int | None = None
 
-
-class EmployeePublicWithDepartment(EmployeePublic):
+class EmployeePublicWithDepartmentAndTasks(EmployeePublic):
     department: DepartmentPublic | None = None
+    tasks: list["TaskPublic"] = Field(default_factory=list)
 
 
-class DepartmentPublicWithEmployees(DepartmentPublic):
-    employees: list[EmployeePublic] = []
+# --- Task Schemas ---
+
+
+class TaskBase(BaseModel):
+    title: str
+    description: str | None
+    completed: bool
+
+    employee_id: UUID
+
+
+class TaskPublic(TaskBase):
+    id: int
+
+
+# --- Forward references ---
+DepartmentPublicWithEmployees.model_rebuild()
+EmployeePublicWithDepartmentAndTasks.model_rebuild()

@@ -1,8 +1,9 @@
-from sqlmodel import Session
-
-from src.emgmt.database import engine
+from src.emgmt.database import SessionLocal
 
 
 def get_session():
-    with Session(engine) as session:
+    session = SessionLocal()
+    try:
         yield session
+    finally:
+        session.close()
