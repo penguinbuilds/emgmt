@@ -32,5 +32,4 @@ alembic revision --autogenerate -m "message"
 ### To Do
 
 - add authorization logic
-- create script with Typer to save SQLite database as JSON
-- schedule db to JSON script with FastAPI
+- schedule tasks with FastAPI
