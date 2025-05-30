@@ -10,16 +10,14 @@ from src.emgmt.schemas import (
     DepartmentPublicWithEmployees,
 )
 
-from src.emgmt.dependencies import get_session
+from src.emgmt.database import get_db
 
-router = APIRouter()
+router = APIRouter(prefix="/departments", tags=["departments"])
 
 
-@router.post(
-    "/departments/", tags=["departments"], response_model=DepartmentPublic
-)
+@router.post("/", response_model=DepartmentPublic)
 async def add_department(
-    *, session: Session = Depends(get_session), department: DepartmentCreate
+    department: DepartmentCreate, session: Session = Depends(get_db)
 ):
     department_data = department.model_dump()
     db_department = Department(**department_data)
@@ -29,12 +27,9 @@ async def add_department(
     return db_department
 
 
-@router.get(
-    "/departments/", tags=["departments"], response_model=list[DepartmentPublic]
-)
+@router.get("/", response_model=list[DepartmentPublic])
 async def display_departments(
-    *,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_db),
     offset: int = 0,
     limit: int = Query(default=100, le=100),
 ):
@@ -47,12 +42,11 @@ async def display_departments(
 
 
 @router.get(
-    "/departments/{department_id}",
-    tags=["departments"],
+    "/{department_id}",
     response_model=DepartmentPublicWithEmployees,
 )
 async def get_department(
-    *, session: Session = Depends(get_session), department_id: int
+    department_id: int, session: Session = Depends(get_db)
 ):
     department = session.get(Department, department_id)
     if not department:
@@ -61,15 +55,13 @@ async def get_department(
 
 
 @router.patch(
-    "/departments/{department_id}",
-    tags=["departments"],
+    "/{department_id}",
     response_model=DepartmentPublic,
 )
 async def update_department(
-    *,
-    session: Session = Depends(get_session),
     department_id: int,
     updated_details: DepartmentUpdate,
+    session: Session = Depends(get_db),
 ):
     db_department = session.get(Department, department_id)
     if not db_department:
@@ -84,11 +76,10 @@ async def update_department(
 
 
 @router.delete(
-    "/departments/{department_id}",
-    tags=["departments"],
+    "/{department_id}",
 )
 async def delete_department(
-    *, session: Session = Depends(get_session), department_id: int
+    department_id: int, session: Session = Depends(get_db)
 ):
     department = session.get(Department, department_id)
     if not department:

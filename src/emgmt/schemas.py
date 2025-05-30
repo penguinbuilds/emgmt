@@ -8,7 +8,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class DepartmentBase(BaseModel):
-    name: str = Field(unique=True)
+    name: str
     location: str
     date_formed: date | None
 
@@ -22,9 +22,9 @@ class DepartmentPublic(DepartmentBase):
 
 
 class DepartmentUpdate(BaseModel):
-    name: str | None
-    location: str | None
-    date_formed: date | None
+    name: str | None = Field(default=None)
+    location: str | None = Field(default=None)
+    date_formed: date | None = Field(default=None)
 
 
 class DepartmentPublicWithEmployees(DepartmentPublic):
@@ -53,13 +53,13 @@ class EmployeePublic(EmployeeBase):
 
 
 class EmployeeUpdate(BaseModel):
-    name: str | None
+    name: str | None = Field(default=None)
     age: int | None = Field(default=None, ge=18, le=60)
-    username: str | None
-    email: EmailStr | None
+    username: str | None = Field(default=None)
+    email: EmailStr | None = Field(default=None)
     password: str | None = Field(default=None)
-    salary: Decimal | None
-    department_id: int | None
+    salary: Decimal | None = Field(default=None)
+    department_id: int | None = Field(default=None)
 
 
 class EmployeePublicWithDepartmentAndTasks(EmployeePublic):

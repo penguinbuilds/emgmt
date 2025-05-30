@@ -1,4 +1,4 @@
-Implemented an employee management web app through FastAPI and an employee's task management CLI through Typer. SQLAlchemy was used to work with a SQLite database, and Alembic was used for DB migration.
+Implemented an employee management web app through FastAPI and an employee's task management CLI through Typer. SQLAlchemy was used to work with a Postgres database running on Docker, and Alembic was used for DB migration.
 
 Each employee has an associated department and a list of tasks.
 

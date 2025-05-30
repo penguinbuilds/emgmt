@@ -1,8 +1,8 @@
-"""migration for sqlalchemy
+"""postgres revision
 
-Revision ID: 32190597e6ab
+Revision ID: 02eab12eee1d
 Revises: 
-Create Date: 2025-05-27 13:02:14.325714
+Create Date: 2025-05-30 11:11:40.733124
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '32190597e6ab'
+revision: str = '02eab12eee1d'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,11 +27,10 @@ def upgrade() -> None:
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('location', sa.String(), nullable=False),
     sa.Column('date_formed', sa.Date(), nullable=True),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('name')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('employee',
-    sa.Column('id', sa.String(length=36), nullable=False),
+    sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('age', sa.Integer(), nullable=True),
     sa.Column('username', sa.String(), nullable=False),
@@ -50,7 +49,7 @@ def upgrade() -> None:
     sa.Column('title', sa.String(), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('completed', sa.Boolean(), nullable=False),
-    sa.Column('employee_id', sa.String(length=36), nullable=False),
+    sa.Column('employee_id', sa.UUID(), nullable=False),
     sa.ForeignKeyConstraint(['employee_id'], ['employee.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

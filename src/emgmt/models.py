@@ -12,6 +12,7 @@ from sqlalchemy import (
     Text,
     # UniqueConstraint,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -25,7 +26,7 @@ class Department(Base):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True
     )
-    name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
     location: Mapped[str] = mapped_column(String, nullable=False)
     date_formed: Mapped[date] = mapped_column(Date, nullable=True)
 
@@ -40,7 +41,7 @@ class Employee(Base):
     __tablename__ = "employee"
 
     id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid4())
+        UUID(as_uuid=True), primary_key=True, default=uuid4
     )
     name: Mapped[str] = mapped_column(String, index=True, nullable=False)
     age: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -77,7 +78,7 @@ class Task(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     completed: Mapped[bool] = mapped_column(Boolean, nullable=False)
     employee_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("employee.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("employee.id"), nullable=False
     )
 
     employee: Mapped[Employee] = relationship(

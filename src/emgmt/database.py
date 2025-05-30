@@ -1,16 +1,21 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.emgmt.models import Base
+from src.emgmt.config import settings
+# from src.emgmt.models import Base
 
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///data/{sqlite_file_name}"
-
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, echo=False, connect_args=connect_args)
+engine = create_engine(settings.DATABASE_URL, echo=False)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def create_db_and_tables():
-    Base.metadata.create_all(engine)
+# def create_db_and_tables():
+#     Base.metadata.create_all(engine)
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

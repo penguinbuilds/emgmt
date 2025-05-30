@@ -58,6 +58,7 @@ def add_task(
             )
             session.add(task)
             session.commit()
+            session.refresh(task)
             typer.echo("Task added.")
             return
         else:
