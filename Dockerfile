@@ -25,4 +25,4 @@ COPY . .
 ENV ENV_FILE=.env
 
 # Run Alembic migrations and then start app
-CMD alembic upgrade head && uvicorn src.emgmt.main:app --host 0.0.0.0 --port 8000 --reload
+CMD ["sh", "-c", "alembic upgrade head && uvicorn src.emgmt.main:app --host 0.0.0.0 --port 8000 --reload"]
