@@ -1,25 +1,39 @@
-# from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, Depends
+from fastapi.responses import HTMLResponse
 
+# from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 import uvicorn
-from fastapi import FastAPI
 
-# from src.emgmt.database import create_db_and_tables
-from src.emgmt.routers import employees
-from src.emgmt.routers import departments
+from src.emgmt.database import get_db
+from src.emgmt.models import Employee
+from src.emgmt.routers import departments, employees, login
 
-
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     create_db_and_tables()
-#     yield
-
-
-# app = FastAPI(lifespan=lifespan)
 
 app = FastAPI(title="Employee Management Web Portal")
 
-app.include_router(employees.router)
+# app.mount(
+#     "/static", StaticFiles(directory="src/emgmt/templates"), name="static"
+# )
+
+
+templates = Jinja2Templates(directory="src/emgmt/templates")
+
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request, session: Session = Depends(get_db)):
+    context = {
+        "request": request,
+        "employees": session.execute(select(Employee)).scalars().all(),
+    }
+    return templates.TemplateResponse("index.html", context)
+
+
+app.include_router(login.router)
 app.include_router(departments.router)
+app.include_router(employees.router)
 
 
 if __name__ == "__main__":

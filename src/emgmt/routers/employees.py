@@ -22,7 +22,10 @@ def enforce_and_validate_employee_constraints(
     session: Session, db_employee: Employee
 ):
     department_ids = session.execute(select(Department.id)).scalars().all()
-    if db_employee.department_id not in department_ids:
+    if (
+        db_employee.department_id not in department_ids
+        and db_employee.department is not None
+    ):
         raise HTTPException(
             status_code=409, detail="Invalid department id entered."
         )
