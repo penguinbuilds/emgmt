@@ -1,7 +1,12 @@
+from datetime import datetime, timedelta
 import json
 from typing_extensions import TypeVar
+from uuid import uuid4
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
+from httpx import AsyncClient
+import jwt
+from jwt.exceptions import InvalidTokenError
 from passlib.hash import pbkdf2_sha256
 from sqlalchemy import Result, select
 from sqlalchemy.orm import Session
@@ -43,6 +48,72 @@ def check_unique_field(
         raise HTTPException(status_code=409, detail=error_message)
 
 
+def create_access_token(
+    data: dict,
+    expiry: timedelta = None,
+    refresh: bool = False,
+) -> str:
+    payload = {}
+
+    expiry_datetime = datetime.now() + (
+        expiry
+        if expiry is not None
+        else timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    payload["data"] = data
+    payload["expiry"] = expiry_datetime.isoformat()
+    payload["jwt_id"] = str(uuid4())
+    payload["refresh"] = refresh
+
+    token = jwt.encode(
+        payload=payload, key=settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
+
+    return token
+
+
+def create_refresh_token(
+    data: dict,
+    expiry: timedelta = None,
+    refresh: bool = False,
+) -> str:
+    payload = {}
+
+    expiry_datetime = datetime.now() + (
+        expiry
+        if expiry is not None
+        else timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+    )
+
+    payload["data"] = data
+    payload["expiry"] = expiry_datetime.isoformat()
+    payload["jwt_id"] = str(uuid4())
+    payload["refresh"] = refresh
+
+    token = jwt.encode(
+        payload=payload,
+        key=settings.REFRESH_SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+
+    return token
+
+
+def decode_token(token: str) -> dict:
+    try:
+        token_data = jwt.decode(
+            jwt=token, key=settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        return token_data
+    except InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
 async def create_admin_user():
     db = next(get_db())
     try:
@@ -65,3 +136,8 @@ async def create_admin_user():
             print("Admin user created successfully.")
     finally:
         db.close()
+
+
+async def get_client():
+    async with AsyncClient() as client:
+        yield client

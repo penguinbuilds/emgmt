@@ -1,4 +1,4 @@
-Implemented an employee management web app through FastAPI and an employee's task management CLI through Typer. SQLAlchemy was used to work with a Postgres database running on Docker, and Alembic was used for DB migration.
+Implemented an employee management web app with FastAPI, and an employee's task management CLI with Typer. SQLAlchemy was used for ORM, and Alembic was used for DB migration. The PostgresSQL database and the FastAPI app are both running on docker containers.
 
 Each employee has an associated department and a list of tasks.
 
@@ -6,18 +6,20 @@ Each employee has an associated department and a list of tasks.
 
 - Create new Poetry project: `poetry new emgmt` or initialize inside an existing folder: `poetry init`
 - Activate the virtual environment: `Invoke-Expression (poetry env activate)`
-- add dependencies with: `poetry add fastapi[standard] sqlalchemy typer alembic`
+- add dependencies with: `poetry add fastapi[standard] sqlalchemy typer alembic pyjwt`
+- create a `.env` file based on `.env.local`
 
-### Launching the WebApp
+### Launching the Application
 
-- `fastapi dev .\src\emgmt\app.py`
-- Once the above command has been run, CRUD methods can be tested out [here](http://127.0.0.1:8000/docs).
+- `docker build . -t fastapi-app`
+- `docker-compose up --build`
+- Once the above commands have been run, CRUD methods can be tested out [here](http://127.0.0.1:8000/docs).
 
 The web app can be used to perform CRUD operations on the `employee` table and the `department` table.
 
 ### The CLI Interface
 
-- The CLI program can be run with: `poetry run python -m src.emgmt.cli.tasks --help` This will also list the available commands.
+- The CLI program can be run from within the Docker container using: `-m src.emgmt.cli.tasks --help` This will also list the available commands.
 - More information about these commands can be viewed using `python -m src.emgmt.cli.tasks <command-name> --help`
 
 The CLI can be used to perform CRUD operations on the `task` table.
@@ -29,7 +31,12 @@ alembic upgrade head
 alembic revision --autogenerate -m "message"
 ```
 
-### To Do
+### Authentication & Role Based Access
 
-- add authorization logic
-- schedule tasks with FastAPI
+When the application starts up for the first time, an admin is also initialized. Only the admin can perform CRUD operations on the `employee` and `department` tables.
+
+The `Display Departments` GET method and `Display Employees` GET method do not require signing in, and they show limited details.
+
+The `Get Department` GET method will only return department details if accessed by the admin or an employee that belongs to that department.
+
+The `Get Employee` GET method method will only return employee details if accessed by the admin or the employee themself.

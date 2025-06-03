@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.emgmt.models import Department
+from src.emgmt.models import Department, Employee
 from src.emgmt.schemas import (
     DepartmentPublic,
     DepartmentCreate,
@@ -11,8 +13,7 @@ from src.emgmt.schemas import (
 )
 
 from src.emgmt.database import get_db
-from src.emgmt.routers.auth import require_admin
-from src.emgmt.schemas import EmployeePublicWithDepartmentAndTasks
+from src.emgmt.routers.auth import require_admin, get_authenticated_employee
 
 router = APIRouter(prefix="/departments", tags=["departments"])
 
@@ -20,8 +21,8 @@ router = APIRouter(prefix="/departments", tags=["departments"])
 @router.post("/", response_model=DepartmentPublic)
 async def add_department(
     department: DepartmentCreate,
+    current_active_user: UUID = Depends(require_admin),
     session: Session = Depends(get_db),
-    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
 ):
     department_data = department.model_dump()
     db_department = Department(**department_data)
@@ -51,13 +52,26 @@ async def display_departments(
 )
 async def get_department(
     department_id: int,
+    current_active_user: dict = Depends(get_authenticated_employee),
     session: Session = Depends(get_db),
-    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
-    # to do: change authorization so that employees belonging to that department can also view details
 ):
+    current_active_user_id = current_active_user["id"]
     department = session.get(Department, department_id)
+    current_active_user_department_id = session.execute(
+        select(Employee.department_id).where(
+            Employee.id == current_active_user_id
+        )
+    ).scalar()
     if not department:
         raise HTTPException(status_code=404, detail="Department not found.")
+    if (
+        current_active_user_department_id != department.id
+        and current_active_user["username"] != "admin"
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions",
+        )
     return department
 
 
@@ -68,8 +82,8 @@ async def get_department(
 async def update_department(
     department_id: int,
     updated_details: DepartmentUpdate,
+    current_active_user: UUID = Depends(require_admin),
     session: Session = Depends(get_db),
-    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
 ):
     db_department = session.get(Department, department_id)
     if not db_department:
@@ -88,8 +102,8 @@ async def update_department(
 )
 async def delete_department(
     department_id: int,
+    current_active_user: UUID = Depends(require_admin),
     session: Session = Depends(get_db),
-    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
 ):
     department = session.get(Department, department_id)
     if not department:
