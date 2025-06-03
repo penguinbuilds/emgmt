@@ -5,8 +5,8 @@ Each employee has an associated department and a list of tasks.
 ### Pre-requisites:
 
 - Create new Poetry project: `poetry new emgmt` or initialize inside an existing folder: `poetry init`
-- Activate the virtual environment: `Invoke-Expression (poetry env activate)`
-- install dependencies with: `poetry install`
+- Activate the virtual environment: `Invoke-Expression (poetry env activate)` or `python -m venv .venv`
+- install dependencies with: `poetry install` or `pip install -r requirements.txt`
 - create a `.env` file based on `.env.local`
 
 ### Launching the Application
