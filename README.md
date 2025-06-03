@@ -1,4 +1,4 @@
-Implemented an employee management web app with FastAPI, and an employee's task management CLI with Typer. SQLAlchemy was used for ORM, and Alembic was used for DB migration. The PostgresSQL database and the FastAPI app are both running on docker containers.
+Implemented an employee management web app with FastAPI, and an employee's task management CLI with Typer. SQLAlchemy was used for ORM, and Alembic was used for DB migration. The PostgresSQL database and the FastAPI app are both running on Docker containers.
 
 Each employee has an associated department and a list of tasks.
 
@@ -6,7 +6,7 @@ Each employee has an associated department and a list of tasks.
 
 - Create new Poetry project: `poetry new emgmt` or initialize inside an existing folder: `poetry init`
 - Activate the virtual environment: `Invoke-Expression (poetry env activate)`
-- add dependencies with: `poetry add fastapi[standard] sqlalchemy typer alembic pyjwt`
+- install dependencies with: `poetry install`
 - create a `.env` file based on `.env.local`
 
 ### Launching the Application
