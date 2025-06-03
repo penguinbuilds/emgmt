@@ -1,5 +1,4 @@
 from uuid import UUID
-from typing_extensions import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select

@@ -11,7 +11,7 @@ from src.emgmt.schemas import (
 )
 
 from src.emgmt.database import get_db
-from src.emgmt.routers.auth import get_logged_in_employee, require_admin
+from src.emgmt.routers.auth import require_admin
 from src.emgmt.schemas import EmployeePublicWithDepartmentAndTasks
 
 router = APIRouter(prefix="/departments", tags=["departments"])
