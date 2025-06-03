@@ -1,4 +1,5 @@
 from uuid import UUID
+from typing_extensions import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -14,6 +15,7 @@ from src.emgmt.schemas import (
 
 from src.emgmt.database import get_db
 from src.emgmt.utils import hash_password, check_unique_field
+from src.emgmt.routers.auth import get_logged_in_employee, require_admin
 
 router = APIRouter(prefix="/employees", tags=["employees"])
 
@@ -48,7 +50,9 @@ def enforce_and_validate_employee_constraints(
 
 @router.post("/", response_model=EmployeePublic)
 async def add_employee(
-    employee: EmployeeCreate, session: Session = Depends(get_db)
+    employee: EmployeeCreate,
+    session: Session = Depends(get_db),
+    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
 ):
     employee_data = employee.model_dump(exclude_unset=True)
     password = employee_data.pop("password")
@@ -80,8 +84,14 @@ async def display_employees(
     "/{employee_id}",
     response_model=EmployeePublicWithDepartmentAndTasks,
 )
-async def get_employee(employee_id: UUID, session: Session = Depends(get_db)):
-    employee = session.get(Employee, employee_id)
+async def get_employee(
+    # employee_id: UUID,
+    employee: EmployeePublicWithDepartmentAndTasks = Depends(
+        get_logged_in_employee
+    ),
+    # session: Session = Depends(get_db),
+):
+    # employee = session.get(Employee, employee_id)
     if not employee:
         raise HTTPException(status_code=404, detail="Employee not found.")
     return employee
@@ -95,6 +105,7 @@ async def update_employee(
     employee_id: UUID,
     updated_details: EmployeeUpdate,
     session: Session = Depends(get_db),
+    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
 ):
     db_employee = session.get(Employee, employee_id)
     if not db_employee:
@@ -117,7 +128,9 @@ async def update_employee(
     "/{employee_id}",
 )
 async def delete_employee(
-    employee_id: UUID, session: Session = Depends(get_db)
+    employee_id: UUID,
+    session: Session = Depends(get_db),
+    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
 ):
     employee = session.get(Employee, employee_id)
     if not employee:

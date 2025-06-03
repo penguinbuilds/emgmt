@@ -11,13 +11,17 @@ from src.emgmt.schemas import (
 )
 
 from src.emgmt.database import get_db
+from src.emgmt.routers.auth import get_logged_in_employee, require_admin
+from src.emgmt.schemas import EmployeePublicWithDepartmentAndTasks
 
 router = APIRouter(prefix="/departments", tags=["departments"])
 
 
 @router.post("/", response_model=DepartmentPublic)
 async def add_department(
-    department: DepartmentCreate, session: Session = Depends(get_db)
+    department: DepartmentCreate,
+    session: Session = Depends(get_db),
+    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
 ):
     department_data = department.model_dump()
     db_department = Department(**department_data)
@@ -46,7 +50,10 @@ async def display_departments(
     response_model=DepartmentPublicWithEmployees,
 )
 async def get_department(
-    department_id: int, session: Session = Depends(get_db)
+    department_id: int,
+    session: Session = Depends(get_db),
+    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
+    # to do: change authorization so that employees belonging to that department can also view details
 ):
     department = session.get(Department, department_id)
     if not department:
@@ -62,6 +69,7 @@ async def update_department(
     department_id: int,
     updated_details: DepartmentUpdate,
     session: Session = Depends(get_db),
+    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
 ):
     db_department = session.get(Department, department_id)
     if not db_department:
@@ -79,7 +87,9 @@ async def update_department(
     "/{department_id}",
 )
 async def delete_department(
-    department_id: int, session: Session = Depends(get_db)
+    department_id: int,
+    session: Session = Depends(get_db),
+    current_user: EmployeePublicWithDepartmentAndTasks = Depends(require_admin),
 ):
     department = session.get(Department, department_id)
     if not department:

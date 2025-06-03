@@ -48,6 +48,7 @@ class Employee(Base):
     username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     hashed_password: Mapped[str | None] = mapped_column(String, nullable=True)
+    role: Mapped[str] = mapped_column(String, default="employee")
     salary: Mapped[Decimal | None] = mapped_column(
         Numeric(10, 2), nullable=True
     )

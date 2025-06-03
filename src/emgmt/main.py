@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request, Depends
 from fastapi.responses import HTMLResponse
 
@@ -9,10 +11,18 @@ import uvicorn
 
 from src.emgmt.database import get_db
 from src.emgmt.models import Employee
-from src.emgmt.routers import departments, employees, login
+from src.emgmt.routers import departments, employees, auth
+from src.emgmt.utils import create_admin_user
 
 
-app = FastAPI(title="Employee Management Web Portal")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_admin_user()
+    yield
+
+
+app = FastAPI(title="Employee Management Web Portal", lifespan=lifespan)
+
 
 # app.mount(
 #     "/static", StaticFiles(directory="src/emgmt/templates"), name="static"
@@ -31,7 +41,7 @@ async def index(request: Request, session: Session = Depends(get_db)):
     return templates.TemplateResponse("index.html", context)
 
 
-app.include_router(login.router)
+app.include_router(auth.router)
 app.include_router(departments.router)
 app.include_router(employees.router)
 

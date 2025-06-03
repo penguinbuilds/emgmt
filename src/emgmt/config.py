@@ -6,11 +6,22 @@ load_dotenv(".env")  # explicitly load .env early
 
 
 class Settings(BaseSettings):
+    # database related
     POSTGRES_DB: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_HOST: str
     POSTGRES_PORT: str
+
+    # JWT token related
+    SECRET_KEY: str
+    REFRESH_SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_MINUTES: int
+    TIMEOUT: int
+
+    ADMIN_PASSWORD: str
 
     @cached_property
     def DATABASE_URL(self):

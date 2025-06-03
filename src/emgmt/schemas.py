@@ -66,6 +66,9 @@ class EmployeePublicWithDepartmentAndTasks(EmployeePublic):
     department: DepartmentPublic | None = None
     tasks: list["TaskPublic"] = Field(default_factory=list)
 
+    class Config:
+        from_attributes = True
+
 
 # --- Task Schemas ---
 
@@ -82,6 +85,6 @@ class TaskPublic(TaskBase):
     id: int
 
 
-# --- Forward references ---
+# --- Forward References ---
 DepartmentPublicWithEmployees.model_rebuild()
 EmployeePublicWithDepartmentAndTasks.model_rebuild()
