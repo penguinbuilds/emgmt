@@ -11,10 +11,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres -d emgmt"]
       interval: 5s
       timeout: 5s
-      retries: 5
-
-    # networks:
-    #   - fastapi-app-network
+      retries: 5    
 
   app:
     image: fastapi-app
@@ -26,8 +23,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # networks:
-    #   - fastapi-app-network
+    
     environment:
       # For DB
       - POSTGRES_DB=${POSTGRES_DB}
@@ -44,8 +40,7 @@ services:
       interval: 3s
       timeout: 5s
       retries: 5
-    # networks:
-    #   - fastapi-app-network
+    
     ports:
       - 6379:6379
 
@@ -61,8 +56,7 @@ services:
     depends_on:
       - app
       - redis
-    # networks:
-    #   - fastapi-app-network
+    
 
   flower:
     container_name: flower
@@ -77,8 +71,7 @@ services:
       - app
       - redis
       - celery_worker
-    # networks:
-    #   - fastapi-app-network
+    
 
 networks:
   fastapi-app-network:
