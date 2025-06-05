@@ -141,3 +141,9 @@ async def create_admin_user():
 async def get_client():
     async with AsyncClient() as client:
         yield client
+
+
+def write_notification(email: str, message=""):
+    with open("log.txt", mode="w") as email_file:
+        content = f"notification for {email}: {message}"
+        email_file.write(content)

@@ -7,26 +7,71 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    networks:
-      - fastapi-app-network
+    # networks:
+    #   - fastapi-app-network
 
   app:
     image: fastapi-app
     container_name: fastapi-app
     ports:
       - 8000:8000
-    # volumes:
-    #   - .:/home
+    volumes:
+      - .:/emgmt
     depends_on:
       - db
-    networks:
-      - fastapi-app-network
+    # networks:
+    #   - fastapi-app-network
     environment:
+      # For DB
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+  redis:
+    container_name: redis
+    image: redis:7.2.5-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+    # networks:
+    #   - fastapi-app-network
+    ports:
+      - 6379:6379
+
+  celery_worker:
+    container_name: celery_worker
+    build: .
+    command: celery -A src.emgmt.celery.celery worker --loglevel=info
+    volumes:
+      - .:/emgmt
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+    depends_on:
+      - app
+      - redis
+    # networks:
+    #   - fastapi-app-network
+
+  flower:
+    container_name: flower
+    build: .
+    command: celery -A src.emgmt.celery.celery flower --port=5555
+    ports:
+      - 5556:5555
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+    depends_on:
+      - app
+      - redis
+      - celery_worker
+    # networks:
+    #   - fastapi-app-network
 
 networks:
   fastapi-app-network:
