@@ -7,6 +7,12 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d emgmt"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
     # networks:
     #   - fastapi-app-network
 
@@ -18,7 +24,8 @@ services:
     volumes:
       - .:/emgmt
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     # networks:
     #   - fastapi-app-network
     environment:

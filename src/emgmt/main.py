@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 import time
 
-from fastapi import FastAPI, Request, Depends, BackgroundTasks
+from fastapi import FastAPI, Request, Depends, BackgroundTasks, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
 
 # from fastapi.staticfiles import StaticFiles
@@ -17,6 +17,7 @@ from src.emgmt.models import Employee
 from src.emgmt.routers import departments, employees, auth, upload_files
 from src.emgmt.utils import (
     create_admin_user,
+    html,
     write_notification,
 )  # , get_client
 
@@ -58,6 +59,19 @@ async def index(request: Request, session: Session = Depends(get_db)):
         "employees": session.execute(select(Employee)).scalars().all(),
     }
     return templates.TemplateResponse("index.html", context)
+
+
+@app.get("/chat/")
+async def get():
+    return HTMLResponse(html)
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message text was: {data}")
 
 
 @app.post("/celery-task")
