@@ -40,3 +40,7 @@ The `Display Departments` GET method and `Display Employees` GET method do not r
 The `Get Department` GET method will only return department details if accessed by the admin or an employee that belongs to that department.
 
 The `Get Employee` GET method method will only return employee details if accessed by the admin or the employee themself.
+
+### Cert Generation
+
+`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout nginx.key -out nginx.crt -subj "//CN=localhost"`

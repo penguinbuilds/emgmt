@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import socket
 import time
 
 from fastapi import FastAPI, Request, Depends, BackgroundTasks, WebSocket
@@ -57,6 +58,7 @@ async def index(request: Request, session: Session = Depends(get_db)):
     context = {
         "request": request,
         "employees": session.execute(select(Employee)).scalars().all(),
+        "hostname": socket.gethostname(),
     }
     return templates.TemplateResponse("index.html", context)
 

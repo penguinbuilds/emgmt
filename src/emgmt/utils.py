@@ -9,6 +9,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from passlib.hash import pbkdf2_sha256
 from sqlalchemy import Result, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from src.emgmt.config import settings
@@ -132,8 +133,12 @@ async def create_admin_user():
                 tasks=[],
             )
             db.add(admin_user)
+        try:
             db.commit()
             print("Admin user created successfully.")
+        except IntegrityError:
+            db.rollback()
+            print("Admin user already exists. Skipping creation.")
     finally:
         db.close()
 
