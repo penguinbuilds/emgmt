@@ -1,0 +1,27 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag fastapi-app:latest
+
+    - name: Tag the image for Docker Hub
+      run: docker tag fastapi-app:latest shaaswatjha/learning-fastapi:latest
+
+    - name: Push the image to Docker Hub
+      run: docker push shaaswatjha/learning-fastapi:latest
