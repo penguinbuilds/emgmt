@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import cached_property
 from dotenv import load_dotenv
 
@@ -6,7 +6,7 @@ load_dotenv(".env")  # explicitly load .env early
 
 
 class Settings(BaseSettings):
-    # database related
+    # For DB
     POSTGRES_DB: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
@@ -23,6 +23,10 @@ class Settings(BaseSettings):
 
     ADMIN_PASSWORD: str
 
+    # Celery and Redis related
+    CELERY_BROKER_URL: str
+    CELERY_RESULT_BACKEND: str
+
     @cached_property
     def DATABASE_URL(self):
         return (
@@ -32,8 +36,11 @@ class Settings(BaseSettings):
             f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
-    class Config:
-        env_file = ".env"
+    # # class based config deprecated in Pydantic V2, will be removed in V3
+    # class Config:
+    #     env_file = ".env"
+
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()

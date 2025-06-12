@@ -9,6 +9,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from passlib.hash import pbkdf2_sha256
 from sqlalchemy import Result, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from src.emgmt.config import settings
@@ -132,8 +133,12 @@ async def create_admin_user():
                 tasks=[],
             )
             db.add(admin_user)
+        try:
             db.commit()
             print("Admin user created successfully.")
+        except IntegrityError:
+            db.rollback()
+            print("Admin user already exists. Skipping creation.")
     finally:
         db.close()
 
@@ -141,3 +146,44 @@ async def create_admin_user():
 async def get_client():
     async with AsyncClient() as client:
         yield client
+
+
+def write_notification(email: str, message=""):
+    with open("log.txt", mode="w") as email_file:
+        content = f"notification for {email}: {message}"
+        email_file.write(content)
+
+
+html = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h1>WebSocket Chat</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+            var ws = new WebSocket("ws://localhost:8000/ws");
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
+"""

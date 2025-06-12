@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 # --- Department Schemas ---
 
@@ -22,6 +22,9 @@ class DepartmentPublic(DepartmentBase):
 
 
 class DepartmentUpdate(BaseModel):
+    # name: str | None = Field(
+    #     json_schema_extra={"default": None}
+    # )  # Field(default=None)
     name: str | None = Field(default=None)
     location: str | None = Field(default=None)
     date_formed: date | None = Field(default=None)
@@ -37,8 +40,8 @@ class DepartmentPublicWithEmployees(DepartmentPublic):
 class EmployeeBase(BaseModel):
     name: str
     age: int | None = Field(default=None, ge=18, le=60)
-    username: str = Field(unique=True)
-    email: EmailStr = Field(unique=True)
+    username: str = Field(json_schema_extra={"unique": True})
+    email: EmailStr = Field(json_schema_extra={"unique": True})
     salary: Decimal | None
 
     department_id: int | None = Field(default=None)
@@ -64,10 +67,14 @@ class EmployeeUpdate(BaseModel):
 
 class EmployeePublicWithDepartmentAndTasks(EmployeePublic):
     department: DepartmentPublic | None = None
+    # tasks: list["TaskPublic"] = Field(default_factory=list)
     tasks: list["TaskPublic"] = Field(default_factory=list)
 
-    class Config:
-        from_attributes = True
+    # # class based config deprecated in Pydantic V2, will be removed in V3
+    # class Config:
+    #     from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Task Schemas ---
